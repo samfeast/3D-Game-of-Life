@@ -26,68 +26,58 @@ public class MeshGenerator : MonoBehaviour
     }
 
     void MakeMeshData() {
-        vertices = new Vector3[36 * voxels.Length];
+        vertices = new Vector3[24 * voxels.Length];
         triangles = new int[36 * voxels.Length];
+
+        int[] tris = new int[] { 0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 18, 17, 19, 20, 21, 22, 22, 21, 23 };
         for (int i = 0; i < voxels.Length; i++) {
             int x = voxels[i].x;
             int y = voxels[i].y;
             int z = voxels[i].z;
+
             // Bottom face
-            vertices[i * voxels.Length + 0] = new Vector3(x, y, z);
-            vertices[i * voxels.Length + 1] = new Vector3(x + 1, y, z);
-            vertices[i * voxels.Length + 2] = new Vector3(x, y, z + 1);
-            vertices[i * voxels.Length + 3] = new Vector3(x, y, z + 1);
-            vertices[i * voxels.Length + 4] = new Vector3(x + 1, y, z);
-            vertices[i * voxels.Length + 5] = new Vector3(x + 1, y, z + 1);
+            vertices[i * 24 + 0] = new Vector3(x, y, z);
+            vertices[i * 24 + 1] = new Vector3(x + 1, y, z);
+            vertices[i * 24 + 2] = new Vector3(x, y, z + 1);
+            vertices[i * 24 + 3] = new Vector3(x + 1, y, z + 1);
             // Top face
-            vertices[i * voxels.Length + 6] = new Vector3(x, y + 1, z);
-            vertices[i * voxels.Length + 7] = new Vector3(x, y + 1, z + 1);
-            vertices[i * voxels.Length + 8] = new Vector3(x + 1, y + 1, z);
-            vertices[i * voxels.Length + 9] = new Vector3(x + 1, y + 1, z);
-            vertices[i * voxels.Length + 10] = new Vector3(x, y + 1, z + 1);
-            vertices[i * voxels.Length + 11] = new Vector3(x + 1, y + 1, z + 1);
+            vertices[i * 24 + 4] = new Vector3(x, y + 1, z);
+            vertices[i * 24 + 5] = new Vector3(x, y + 1, z + 1);
+            vertices[i * 24 + 6] = new Vector3(x + 1, y + 1, z);
+            vertices[i * 24 + 7] = new Vector3(x + 1, y + 1, z + 1);
             // Front face
-            vertices[i * voxels.Length + 12] = new Vector3(x, y, z);
-            vertices[i * voxels.Length + 13] = new Vector3(x, y, z + 1);
-            vertices[i * voxels.Length + 14] = new Vector3(x, y + 1, z + 1);
-            vertices[i * voxels.Length + 15] = new Vector3(x, y + 1, z + 1);
-            vertices[i * voxels.Length + 16] = new Vector3(x, y + 1, z);
-            vertices[i * voxels.Length + 17] = new Vector3(x, y, z);
+            vertices[i * 24 + 8] = new Vector3(x, y, z);
+            vertices[i * 24 + 9] = new Vector3(x, y + 1, z);
+            vertices[i * 24 + 10] = new Vector3(x + 1, y, z);
+            vertices[i * 24 + 11] = new Vector3(x + 1, y + 1, z);
             // Back face
-            vertices[i * voxels.Length + 18] = new Vector3(x + 1, y, z);
-            vertices[i * voxels.Length + 19] = new Vector3(x + 1, y + 1, z + 1);
-            vertices[i * voxels.Length + 20] = new Vector3(x + 1, y, z + 1);
-            vertices[i * voxels.Length + 21] = new Vector3(x + 1, y + 1, z);
-            vertices[i * voxels.Length + 22] = new Vector3(x + 1, y + 1, z + 1);
-            vertices[i * voxels.Length + 23] = new Vector3(x + 1, y, z);
+            vertices[i * 24 + 12] = new Vector3(x, y, z + 1);
+            vertices[i * 24 + 13] = new Vector3(x + 1, y, z + 1);
+            vertices[i * 24 + 14] = new Vector3(x, y + 1, z + 1);
+            vertices[i * 24 + 15] = new Vector3(x + 1, y + 1, z + 1);
             // Left face
-            vertices[i * voxels.Length + 24] = new Vector3(x, y, z + 1);
-            vertices[i * voxels.Length + 25] = new Vector3(x + 1, y, z + 1);
-            vertices[i * voxels.Length + 26] = new Vector3(x + 1, y + 1, z + 1);
-            vertices[i * voxels.Length + 27] = new Vector3(x + 1, y + 1, z + 1);
-            vertices[i * voxels.Length + 28] = new Vector3(x, y + 1, z + 1);
-            vertices[i * voxels.Length + 29] = new Vector3(x, y, z + 1);
+            vertices[i * 24 + 16] = new Vector3(x, y, z);
+            vertices[i * 24 + 17] = new Vector3(x, y, z + 1);
+            vertices[i * 24 + 18] = new Vector3(x, y + 1, z);
+            vertices[i * 24 + 19] = new Vector3(x, y + 1, z + 1);
             // Right face
-            vertices[i * voxels.Length + 30] = new Vector3(x, y, z);
-            vertices[i * voxels.Length + 31] = new Vector3(x + 1, y + 1, z);
-            vertices[i * voxels.Length + 32] = new Vector3(x + 1, y, z);
-            vertices[i * voxels.Length + 33] = new Vector3(x, y + 1, z);
-            vertices[i * voxels.Length + 34] = new Vector3(x + 1, y + 1, z);
-            vertices[i * voxels.Length + 35] = new Vector3(x, y, z);
+            vertices[i * 24 + 20] = new Vector3(x + 1, y, z);
+            vertices[i * 24 + 21] = new Vector3(x + 1, y + 1, z);
+            vertices[i * 24 + 22] = new Vector3(x + 1, y, z + 1);
+            vertices[i * 24 + 23] = new Vector3(x + 1, y + 1, z + 1);
 
-
-            for (int j = 0; j < 36; j++) {
-                triangles[i * voxels.Length + j] = i * voxels.Length + j;
+            for (int j = 0; j < tris.Length; j++) {
+                triangles[i * tris.Length + j] = i * 24 + tris[j];
             }
             
-
         }
-
     }
 
     void CreateMesh() {
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+
+        mesh.RecalculateNormals();
     }
 }
