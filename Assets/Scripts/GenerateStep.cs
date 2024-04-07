@@ -1,15 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 public class GenerateStep {
 
     static int[] deathCondition = new int[] { 0 };
     static int[] ressurectCondition = new int[] { 1 };
 
-    public static bool[,,] nextStep(bool[,,] arr) {
+    public static (bool[,,], List<VoxelData>) nextStep(bool[,,] arr) {
 
         bool[,,] newArr = new bool[arr.GetLength(0), arr.GetLength(1), arr.GetLength(2)];
+        List<VoxelData> voxels = new List<VoxelData>();
 
         for (int x = 0; x < arr.GetLength(0); x++) {
             for (int y = 0; y < arr.GetLength(1); y++) {
@@ -34,17 +35,23 @@ public class GenerateStep {
 
                     if (arr[x, y, z] && deathCondition.Contains(neighbours.Length)) {
                         newArr[x, y, z] = false;
-                    } else if (!arr[x, y, z] && ressurectCondition.Contains(neighbours.Length)) {
+                    }
+                    else if (!arr[x, y, z] && ressurectCondition.Contains(neighbours.Length)) {
                         newArr[x, y, z] = true;
+                        voxels.Add(new VoxelData(x, y, z, bottomNeighbour, topNeighbour, frontNeighbour, backNeighbour, leftNeighbour, rightNeighbour));
+                    }
+                    else if (arr[x, y, z]) {
+                        newArr[x, y, z] = true;
+                        voxels.Add(new VoxelData(x, y, z, bottomNeighbour, topNeighbour, frontNeighbour, backNeighbour, leftNeighbour, rightNeighbour));
                     } else {
-                        newArr[x, y, z] = arr[x, y, z];
+                        newArr[x, y, z] = false;
                     }
 
                 }
             }
         }
 
-        return newArr;
+        return (newArr, voxels);
     }
     private static int[] getNeighbours(bool[,,] arr, int x, int y, int z) {
         // Get all the offset vectors
