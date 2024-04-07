@@ -4,54 +4,64 @@ using System.Linq;
 using UnityEngine;
 public class GenerateStep {
 
-    static int[] deathCondition = new int[] { 0 };
-    static int[] ressurectCondition = new int[] { 1 };
+    static int[] deathCondition = new int[] {};
+    static int[] resurrectCondition = new int[] { 0,1 };
 
-    public static (bool[,,], List<VoxelData>) nextStep(bool[,,] arr) {
+    public static SimulationState nextStep(bool[,,] arr) {
 
         bool[,,] newArr = new bool[arr.GetLength(0), arr.GetLength(1), arr.GetLength(2)];
         List<VoxelData> voxels = new List<VoxelData>();
 
+        // Go through all the cells and check if they're alive in the next iteration.
         for (int x = 0; x < arr.GetLength(0); x++) {
             for (int y = 0; y < arr.GetLength(1); y++) {
                 for (int z = 0; z < arr.GetLength(2); z++) {
-                    bool bottomNeighbour = false;
-                    bool topNeighbour = false;
-                    bool frontNeighbour = false;
-                    bool backNeighbour = false;
-                    bool leftNeighbour = false;
-                    bool rightNeighbour = false;
 
                     int[] neighbours = getNeighbours(arr, x, y, z);
-                    for (int i = 0; i < neighbours.Length; i++) {
-                        // These values are unique to the way offsets is generated in getNeighbours()
-                        if (neighbours[i] == 10) bottomNeighbour = true;
-                        if (neighbours[i] == 15) topNeighbour = true;
-                        if (neighbours[i] == 12) frontNeighbour = true;
-                        if (neighbours[i] == 13) backNeighbour = true;
-                        if (neighbours[i] == 4) leftNeighbour = true;
-                        if (neighbours[i] == 21) rightNeighbour = true;
-                    }
 
                     if (arr[x, y, z] && deathCondition.Contains(neighbours.Length)) {
                         newArr[x, y, z] = false;
                     }
-                    else if (!arr[x, y, z] && ressurectCondition.Contains(neighbours.Length)) {
+                    else if (!arr[x, y, z] && resurrectCondition.Contains(neighbours.Length)) {
                         newArr[x, y, z] = true;
-                        voxels.Add(new VoxelData(x, y, z, bottomNeighbour, topNeighbour, frontNeighbour, backNeighbour, leftNeighbour, rightNeighbour));
-                    }
-                    else if (arr[x, y, z]) {
-                        newArr[x, y, z] = true;
-                        voxels.Add(new VoxelData(x, y, z, bottomNeighbour, topNeighbour, frontNeighbour, backNeighbour, leftNeighbour, rightNeighbour));
                     } else {
-                        newArr[x, y, z] = false;
+                        newArr[x, y, z] = arr[x, y, z];
                     }
 
                 }
             }
         }
 
-        return (newArr, voxels);
+        // Generate the voxels for the new state. This involves finding the neighbours of each alive cell.
+        int externalFaces = 0;
+        for (int x = 0; x < newArr.GetLength(0); x++) {
+            for (int y = 0; y < newArr.GetLength(1); y++) {
+                for (int z = 0; z < newArr.GetLength(2); z++) {
+                    if (newArr[x, y, z]) {
+                        bool bottomNeighbour = false;
+                        bool topNeighbour = false;
+                        bool frontNeighbour = false;
+                        bool backNeighbour = false;
+                        bool leftNeighbour = false;
+                        bool rightNeighbour = false;
+
+                        int[] neighbours = getNeighbours(newArr, x, y, z);
+                        for (int i = 0; i < neighbours.Length; i++) {
+                            // These values are unique to the way offsets is generated in getNeighbours()
+                            if (neighbours[i] == 10) bottomNeighbour = true; else externalFaces++;
+                            if (neighbours[i] == 15) topNeighbour = true; else externalFaces++;
+                            if (neighbours[i] == 12) frontNeighbour = true; else externalFaces++;
+                            if (neighbours[i] == 13) backNeighbour = true; else externalFaces++;
+                            if (neighbours[i] == 4) leftNeighbour = true; else externalFaces++;
+                            if (neighbours[i] == 21) rightNeighbour = true; else externalFaces++;
+                        }
+                        voxels.Add(new VoxelData(x, y, z, bottomNeighbour, topNeighbour, frontNeighbour, backNeighbour, leftNeighbour, rightNeighbour));
+                    }
+                }
+            }
+        }
+
+        return new SimulationState(newArr, voxels, externalFaces);
     }
     private static int[] getNeighbours(bool[,,] arr, int x, int y, int z) {
         // Get all the offset vectors
