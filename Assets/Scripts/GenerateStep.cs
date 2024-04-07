@@ -11,6 +11,7 @@ public class GenerateStep {
 
         bool[,,] newArr = new bool[arr.GetLength(0), arr.GetLength(1), arr.GetLength(2)];
         List<VoxelData> voxels = new List<VoxelData>();
+        List<int> cumulativeFaces = new List<int>();
 
         // Go through all the cells and check if they're alive in the next iteration.
         for (int x = 0; x < arr.GetLength(0); x++) {
@@ -56,12 +57,13 @@ public class GenerateStep {
                             if (neighbours[i] == 21) rightNeighbour = true; else externalFaces++;
                         }
                         voxels.Add(new VoxelData(x, y, z, bottomNeighbour, topNeighbour, frontNeighbour, backNeighbour, leftNeighbour, rightNeighbour));
+                        cumulativeFaces.Add(externalFaces);
                     }
                 }
             }
         }
 
-        return new SimulationState(newArr, voxels, externalFaces);
+        return new SimulationState(newArr, voxels, cumulativeFaces, externalFaces);
     }
     private static int[] getNeighbours(bool[,,] arr, int x, int y, int z) {
         // Get all the offset vectors

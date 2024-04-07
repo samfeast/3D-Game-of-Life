@@ -10,6 +10,7 @@ public class MeshGenerator : MonoBehaviour
 {
 
     Mesh mesh;
+    int meshCount = 2;
 
     Vector3[] vertices;
     int[] triangles;
@@ -26,8 +27,11 @@ public class MeshGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        bool[,,] arr = new bool[20, 20, 20];
-        arr[0, 0, 0] = true;
+        bool[,,] arr = new bool[16, 16, 16];
+
+        int meshNumber = int.Parse(gameObject.name.Substring(4));
+
+        if (meshNumber >= meshCount) return;
 
         // Find how many cells are alive
         int numVoxels = 0;
@@ -38,14 +42,35 @@ public class MeshGenerator : MonoBehaviour
                 }
             }
         }
-
+        var watch = new System.Diagnostics.Stopwatch();
+        watch.Start();
         SimulationState newState = GenerateStep.nextStep(arr);
-        voxels = newState.voxels;
-        int externalFaces = newState.externalFaces;
+        watch.Stop();
+        print("nextStep() took " + watch.ElapsedMilliseconds + "ms");
 
-        print("Generated " + voxels.Count + " voxels.");
+        int voxelsPerMesh = newState.voxels.Count / meshCount;
+        int splitIndexStart = voxelsPerMesh * meshNumber;
+        int splitIndexEnd = voxelsPerMesh + voxelsPerMesh * meshNumber - 1;
+
+        if (newState.voxels.Count - (splitIndexStart + voxelsPerMesh) == 1) {
+            voxels = newState.voxels.GetRange(splitIndexStart, voxelsPerMesh + 1);
+        } else {
+            voxels = newState.voxels.GetRange(splitIndexStart, voxelsPerMesh);
+        }
+        
+        int externalFaces = newState.cumulativeFaces[splitIndexEnd];
+
+        var watch2 = new System.Diagnostics.Stopwatch();
+        watch2.Start();
         MakeMeshData(voxels, externalFaces);
+        watch2.Stop();
+        print("MakeMeshData() took " + watch2.ElapsedMilliseconds + "ms");
+
+        var watch3 = new System.Diagnostics.Stopwatch();
+        watch3.Start();
         CreateMesh();
+        watch3.Stop();
+        print("CreateMesh() took " + watch3.ElapsedMilliseconds + "ms");
     }
 
     void MakeMeshData(List<VoxelData> voxels, int externalFaces) {
