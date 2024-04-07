@@ -1,3 +1,5 @@
+using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,7 +22,32 @@ public class MeshGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        voxels = new VoxelData[] { new VoxelData(0, 0, 0) };
+        bool[,,] arr = new bool[3, 3, 3];
+        arr[1, 1, 1] = true;
+
+        // Find how many cells are alive
+        int numVoxels = 0;
+        for (int x = 0; x < arr.GetLength(0); x++) {
+            for (int y = 0; y < arr.GetLength(1); y++) {
+                for (int z = 0; z < arr.GetLength(2); z++) {
+                    if (arr[x, y, z]) numVoxels++;
+                }
+            }
+        }
+
+        voxels = new VoxelData[numVoxels];
+        int found = 0;
+        for (int x = 0; x < arr.GetLength(0); x++) {
+            for (int y = 0; y < arr.GetLength(1); y++) {
+                for (int z = 0; z < arr.GetLength(2); z++) {
+                    if (arr[x, y, z]) {
+                        voxels[found] = new VoxelData(x, y, z);
+                        found++;
+                    }
+                }
+            }
+        }
+        print("Generated " + found + " voxels.");
         MakeMeshData();
         CreateMesh();
     }
