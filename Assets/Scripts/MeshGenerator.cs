@@ -1,16 +1,16 @@
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
-public class MeshGenerator : MonoBehaviour
-{
+public class MeshGenerator : MonoBehaviour {
 
     Mesh mesh;
-    int meshCount = 2;
+    int meshCount = 1;
 
     Vector3[] vertices;
     int[] triangles;
@@ -20,14 +20,25 @@ public class MeshGenerator : MonoBehaviour
 
     List<VoxelData> voxels = new List<VoxelData>();
 
+    SimulationState state = new SimulationState(new bool[0,0,0], new List<VoxelData>(), new List<int>(), 0);
     private void Awake() {
         mesh = GetComponent<MeshFilter>().mesh;
     }
 
     // Start is called before the first frame update
-    void Start()
-    {
-        bool[,,] arr = new bool[16, 16, 16];
+    void Start() {
+        System.Random rand = new System.Random();
+        bool[,,] arr = new bool[26, 26, 26];
+        for (int x = 0; x < arr.GetLength(0); x++) {
+            for (int y = 0; y < arr.GetLength(1); y++) {
+                for (int z = 0; z < arr.GetLength(2); z++) {
+                    if (rand.NextDouble() < 0.5) {
+                        arr[x, y, z] = true;
+                    }
+                }
+            }
+        }
+
 
         int meshNumber = int.Parse(gameObject.name.Substring(4));
 
@@ -44,21 +55,23 @@ public class MeshGenerator : MonoBehaviour
         }
         var watch = new System.Diagnostics.Stopwatch();
         watch.Start();
-        SimulationState newState = GenerateStep.nextStep(arr);
+        state = GenerateStep.nextStep(arr);
         watch.Stop();
         print("nextStep() took " + watch.ElapsedMilliseconds + "ms");
 
-        int voxelsPerMesh = newState.voxels.Count / meshCount;
+        int voxelsPerMesh = state.voxels.Count / meshCount;
         int splitIndexStart = voxelsPerMesh * meshNumber;
         int splitIndexEnd = voxelsPerMesh + voxelsPerMesh * meshNumber - 1;
 
-        if (newState.voxels.Count - (splitIndexStart + voxelsPerMesh) == 1) {
-            voxels = newState.voxels.GetRange(splitIndexStart, voxelsPerMesh + 1);
-        } else {
-            voxels = newState.voxels.GetRange(splitIndexStart, voxelsPerMesh);
+        if (state.voxels.Count - (splitIndexStart + voxelsPerMesh) == 1) {
+            voxels = state.voxels.GetRange(splitIndexStart, voxelsPerMesh + 1);
         }
-        
-        int externalFaces = newState.cumulativeFaces[splitIndexEnd];
+        else {
+            voxels = state.voxels.GetRange(splitIndexStart, voxelsPerMesh);
+        }
+
+        int externalFaces = getLast(state.cumulativeFaces);
+        print("extf: " + externalFaces);
 
         var watch2 = new System.Diagnostics.Stopwatch();
         watch2.Start();
@@ -74,8 +87,13 @@ public class MeshGenerator : MonoBehaviour
     }
 
     void MakeMeshData(List<VoxelData> voxels, int externalFaces) {
+        print("extf: " + externalFaces);
         vertices = new Vector3[4 * externalFaces];
         triangles = new int[6 * externalFaces];
+        print("mylen: " + vertices.Length);
+
+        verticesFound = 0;
+        trianglesFound = 0;
 
         for (int i = 0; i < voxels.Count; i++) {
             int x = voxels[i].x;
@@ -154,5 +172,53 @@ public class MeshGenerator : MonoBehaviour
         mesh.triangles = triangles;
 
         mesh.RecalculateNormals();
+    }
+
+    int getLast(List<int> list) {
+        try {
+            return list.Last();
+        } catch (InvalidOperationException) {
+            return 0;
+        }
+    }
+
+
+
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.Mouse0)) {
+            Debug.Log("space key was pressed");
+            bool[,,] oldState = state.arr;
+            state = GenerateStep.nextStep(oldState);
+
+            int meshNumber = int.Parse(gameObject.name.Substring(4));
+
+            if (meshNumber >= meshCount) return;
+
+            int voxelsPerMesh = state.voxels.Count / meshCount;
+            int splitIndexStart = voxelsPerMesh * meshNumber;
+            int splitIndexEnd = voxelsPerMesh + voxelsPerMesh * meshNumber - 1;
+
+            if (state.voxels.Count - (splitIndexStart + voxelsPerMesh) == 1) {
+                voxels = state.voxels.GetRange(splitIndexStart, voxelsPerMesh + 1);
+            }
+            else {
+                voxels = state.voxels.GetRange(splitIndexStart, voxelsPerMesh);
+            }
+
+            int externalFaces = getLast(state.cumulativeFaces);
+
+
+            var watch2 = new System.Diagnostics.Stopwatch();
+            watch2.Start();
+            MakeMeshData(voxels, externalFaces);
+            watch2.Stop();
+            print("MakeMeshData() took " + watch2.ElapsedMilliseconds + "ms");
+
+            var watch3 = new System.Diagnostics.Stopwatch();
+            watch3.Start();
+            CreateMesh();
+            watch3.Stop();
+            print("CreateMesh() took " + watch3.ElapsedMilliseconds + "ms");
+        }
     }
 }

@@ -4,8 +4,8 @@ using System.Linq;
 using UnityEngine;
 public class GenerateStep {
 
-    static int[] deathCondition = new int[] {};
-    static int[] resurrectCondition = new int[] { 0,1 };
+    static int[] deathCondition = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+    static int[] resurrectCondition = new int[] { 14, 15, 16, 17, 18, 19 };
 
     public static SimulationState nextStep(bool[,,] arr) {
 
@@ -25,7 +25,8 @@ public class GenerateStep {
                     }
                     else if (!arr[x, y, z] && resurrectCondition.Contains(neighbours.Length)) {
                         newArr[x, y, z] = true;
-                    } else {
+                    }
+                    else {
                         newArr[x, y, z] = arr[x, y, z];
                     }
 
@@ -85,7 +86,8 @@ public class GenerateStep {
         for (int i = 0; i < 26; i++) {
             try {
                 if (arr[x + offsets[i][0], y + offsets[i][1], z + offsets[i][2]]) countNeighbours++;
-            } catch (IndexOutOfRangeException) {
+            }
+            catch (IndexOutOfRangeException) {
                 // Index is outside the range of the array
             }
         }
