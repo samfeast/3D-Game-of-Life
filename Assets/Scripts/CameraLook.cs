@@ -35,11 +35,11 @@ public class CameraLook : MonoBehaviour
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
 
         if (Input.GetKey(KeyCode.Space)) {
-            gameObject.transform.Translate(0, 0.02f, 0);
+            gameObject.transform.Translate(0, 0.06f, 0);
         }
 
         if (Input.GetKey(KeyCode.LeftShift)) {
-            gameObject.transform.Translate(0, -0.02f, 0);
+            gameObject.transform.Translate(0, -0.06f, 0);
         }
     }
 }

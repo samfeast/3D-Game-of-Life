@@ -28,7 +28,7 @@ public class MeshGenerator : MonoBehaviour {
     // Start is called before the first frame update
     void Start() {
         System.Random rand = new System.Random();
-        bool[,,] arr = new bool[26, 26, 26];
+        bool[,,] arr = new bool[24, 24, 24];
         for (int x = 0; x < arr.GetLength(0); x++) {
             for (int y = 0; y < arr.GetLength(1); y++) {
                 for (int z = 0; z < arr.GetLength(2); z++) {
